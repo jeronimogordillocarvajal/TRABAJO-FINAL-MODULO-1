@@ -1,0 +1,255 @@
+"""
+SISTEMA INTEGRADO DE GESTIÓN DE EMPLEADOS Y USUARIOS
+Combina conceptos de:
+- Herencia y POO
+- Encriptación de datos
+- Validación de información
+- Gestión de registros
+"""
+
+import json
+from datetime import datetime
+
+
+class Usuario:
+    """Clase base para usuarios del sistema"""
+    def __init__(self, nombre, edad, email):
+        self.nombre = nombre
+        self.edad = edad
+        self.email = email
+        self.fecha_registro = datetime.now().strftime("%d/%m/%Y %H:%M")
+
+    def validar_edad(self):
+        """Valida si el usuario es mayor de edad"""
+        if self.edad < 18:
+            return f"{self.nombre} es menor de edad ({self.edad} años)"
+        else:
+            return f"{self.nombre} es mayor de edad ({self.edad} años)"
+
+    def __str__(self):
+        return f"Usuario: {self.nombre} | Edad: {self.edad} | Email: {self.email}"
+
+
+class Empleado(Usuario):
+    """Clase que hereda de Usuario"""
+    def __init__(self, nombre, edad, email, salario, departamento):
+        super().__init__(nombre, edad, email)
+        self.salario = salario
+        self.departamento = departamento
+        self.contrasena_encriptada = None
+
+    def encriptar_contrasena(self, contrasena):
+        """Encripta la contraseña usando sustitución simple"""
+        encriptada = ""
+        for char in contrasena:
+            if char == 'a' or char == 'A':
+                encriptada += '4'
+            elif char == 'e' or char == 'E':
+                encriptada += '3'
+            elif char == 'i' or char == 'I':
+                encriptada += '1'
+            elif char == 'o' or char == 'O':
+                encriptada += '0'
+            elif char == 's' or char == 'S':
+                encriptada += '5'
+            elif char == 't' or char == 'T':
+                encriptada += '7'
+            else:
+                encriptada += char
+        self.contrasena_encriptada = encriptada
+        return encriptada
+
+    def mostrar_informacion(self):
+        """Muestra información completa del empleado"""
+        print(f"\n{'='*50}")
+        print(f"INFORMACIÓN DEL EMPLEADO")
+        print(f"{'='*50}")
+        print(f"Nombre: {self.nombre}")
+        print(f"Edad: {self.edad} años")
+        print(f"Email: {self.email}")
+        print(f"Salario: ${self.salario:,.2f}")
+        print(f"Departamento: {self.departamento}")
+        print(f"Registro: {self.fecha_registro}")
+        print(f"Contraseña encriptada: {self.contrasena_encriptada}")
+        print(f"{self.validar_edad()}")
+        print(f"{'='*50}\n")
+
+    def __str__(self):
+        return f"{self.nombre} | ${self.salario} | {self.departamento}"
+
+
+class Gerente(Empleado):
+    """Clase que hereda de Empleado"""
+    def __init__(self, nombre, edad, email, salario, departamento, equipo_a_cargo):
+        super().__init__(nombre, edad, email, salario, departamento)
+        self.equipo_a_cargo = equipo_a_cargo
+
+    def mostrar_informacion(self):
+        """Extiende la información del empleado"""
+        super().mostrar_informacion()
+        print(f"Equipo a cargo: {self.equipo_a_cargo} personas")
+
+
+class ValidadorTemperatura:
+    """Clase para validar y clasificar temperaturas"""
+    @staticmethod
+    def clasificar(temperatura):
+        if temperatura < 0:
+            return "Hace mucho frío "
+        elif temperatura <= 20:
+            return "Clima templadito "
+        elif temperatura <= 30:
+            return "Clima agradable "
+        else:
+            return "¡calor caleño! "
+
+
+class SistemaGestion:
+    """Sistema principal de gestión"""
+    def __init__(self):
+        self.empleados = []
+
+    def registrar_empleado(self):
+        """Registra un nuevo empleado"""
+        print("\n--- REGISTRAR NUEVO EMPLEADO ---")
+        try:
+            nombre = input("Nombre: ").strip().title()
+            edad = int(input("Edad: "))
+            
+            if edad < 0 or edad > 120:
+                print(" Edad inválida")
+                return
+            
+            email = input("Email: ").strip()
+            salario = float(input("Salario: $"))
+            departamento = input("Departamento: ").strip()
+            
+            tipo = input("¿Es Gerente? (s/n): ").strip().lower()
+            
+            if tipo == 's':
+                equipo = int(input("¿Cuántas personas a cargo?: "))
+                empleado = Gerente(nombre, edad, email, salario, departamento, equipo)
+            else:
+                empleado = Empleado(nombre, edad, email, salario, departamento)
+            
+            contrasena = input("Contraseña a encriptar: ")
+            empleado.encriptar_contrasena(contrasena)
+            
+            self.empleados.append(empleado)
+            print(f" {nombre} registrado exitosamente")
+        except ValueError:
+            print(" Error: ingrese datos válidos")
+
+    def listar_empleados(self):
+        """Lista todos los empleados registrados"""
+        print("\n--- LISTA DE EMPLEADOS ---")
+        if not self.empleados:
+            print("No hay empleados registrados.")
+        else:
+            for i, emp in enumerate(self.empleados, 1):
+                print(f"{i}. {emp}")
+
+    def buscar_empleado(self):
+        """Busca un empleado por nombre"""
+        print("\n--- BUSCAR EMPLEADO ---")
+        nombre = input("Ingrese nombre a buscar: ").strip().lower()
+        encontrados = [e for e in self.empleados if nombre in e.nombre.lower()]
+        
+        if encontrados:
+            for emp in encontrados:
+                emp.mostrar_informacion()
+        else:
+            print(" No se encontró ningún empleado")
+
+    def validar_temperatura(self):
+        """Valida y clasifica temperaturas"""
+        print("\n--- CLASIFICADOR DE TEMPERATURA ---")
+        try:
+            temp = float(input("Ingrese temperatura en °C: "))
+            clasificacion = ValidadorTemperatura.clasificar(temp)
+            print(f"Resultado: {clasificacion}")
+        except ValueError:
+            print(" Ingrese un número válido")
+
+    def validar_edad_usuario(self):
+        """Valida si una persona es mayor de edad"""
+        print("\n--- VALIDADOR DE EDAD ---")
+        try:
+            edad = int(input("Ingrese edad: "))
+            if edad < 18:
+                print(f"  Es menor de edad ({edad} años)")
+            else:
+                print(f" Es mayor de edad ({edad} años)")
+        except ValueError:
+            print(" Ingrese un número válido")
+
+    def calcular_promedio_salarios(self):
+        """Calcula el promedio de salarios"""
+        print("\n--- PROMEDIO DE SALARIOS ---")
+        if not self.empleados:
+            print("No hay empleados registrados.")
+            return
+        
+        promedio = sum(e.salario for e in self.empleados) / len(self.empleados)
+        total = sum(e.salario for e in self.empleados)
+        
+        print(f"Total de empleados: {len(self.empleados)}")
+        print(f"Salario total: ${total:,.2f}")
+        print(f"Promedio de salarios: ${promedio:,.2f}")
+
+    def menu(self):
+        """Menú principal del sistema"""
+        while True:
+            print("\n" + "="*50)
+            print("SISTEMA INTEGRADO DE GESTIÓN")
+            print("="*50)
+            print("1. Registrar empleado")
+            print("2. Listar empleados")
+            print("3. Buscar empleado por nombre")
+            print("4. Calcular promedio de salarios")
+            print("5. Validar temperatura")
+            print("6. Validar mayoría de edad")
+            print("7. Salir")
+            print("="*50)
+            
+            opcion = input("Elija una opción (1-7): ").strip()
+
+            if opcion == "1":
+                self.registrar_empleado()
+            elif opcion == "2":
+                self.listar_empleados()
+            elif opcion == "3":
+                self.buscar_empleado()
+            elif opcion == "4":
+                self.calcular_promedio_salarios()
+            elif opcion == "5":
+                self.validar_temperatura()
+            elif opcion == "6":
+                self.validar_edad_usuario()
+            elif opcion == "7":
+                print("\n ¡Hasta luego!")
+                break
+            else:
+                print(" Opción inválida. Intente de nuevo.")
+
+
+def main():
+    """Función principal"""
+    sistema = SistemaGestion()
+    
+    # Datos de ejemplo
+    print("Cargando sistema...")
+    emp1 = Empleado("Carlos Martínez", 35, "carlos@empresa.com", 50000, "Desarrollo")
+    emp1.encriptar_contrasena("python123")
+    sistema.empleados.append(emp1)
+    
+    gerente1 = Gerente("María López", 42, "maria@empresa.com", 75000, "Recursos Humanos", 5)
+    gerente1.encriptar_contrasena("gerente456")
+    sistema.empleados.append(gerente1)
+    
+    print("✅ Sistema listo. Ingrese en el menú.\n")
+    sistema.menu()
+
+
+if __name__ == "__main__":
+    main()
